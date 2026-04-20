@@ -515,11 +515,10 @@ async def lifespan(app: FastAPI):
 # ──────────────────────────────────────────────────────────────────
 app = FastAPI(title="WildGuard AI v6", version="6.0.0", lifespan=lifespan)
 app.add_middleware(CORSMiddleware,
-    allow_origins=os.getenv(
-        "CORS_ORIGINS",
-        "http://localhost:3000,http://localhost:5173"
-    ).split(","),
-    allow_credentials=True, allow_methods=["*"], allow_headers=["*"]
+    allow_origins=["*"],  # Open for demo — restrict in production
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # ── Pydantic models ───────────────────────────────────────────────
@@ -1896,6 +1895,16 @@ async def list_scenarios():
         for k, v in _DEMO_SCENARIOS.items()
     ]
 
+@app.options("/demo/trigger/{scenario_id}", tags=["Demo"])
+async def trigger_scenario_options(scenario_id: str):
+    """Handle CORS preflight for demo trigger."""
+    from fastapi.responses import Response
+    return Response(status_code=200, headers={
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "*",
+    })
+
 @app.post("/demo/trigger/{scenario_id}", tags=["Demo"])
 async def trigger_scenario(scenario_id: str):
     """
@@ -1914,6 +1923,15 @@ async def trigger_scenario(scenario_id: str):
         "alert_fired": True,
         "message": f"Scenario '{scenario['name']}' activated. Dashboard updating in real-time.",
     }
+
+@app.options("/demo/reset", tags=["Demo"])
+async def demo_reset_options():
+    from fastapi.responses import Response
+    return Response(status_code=200, headers={
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "*",
+    })
 
 @app.post("/demo/reset", tags=["Demo"])
 async def demo_reset():
