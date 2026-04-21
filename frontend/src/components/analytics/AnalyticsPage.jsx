@@ -169,6 +169,9 @@ export default function AnalyticsPage(){
 
   const {data:abData} = useQuery({queryKey:['ab_analysis'],queryFn:()=>fetch('/api/analytics/ab_comparison',{headers:authH()}).then(r=>r.json()),refetchInterval:60000})
 
+
+
+  
   const tabs=[
     {k:'overview',l:'📊 Overview'},
     {k:'learning',l:'🧠 RL Learning'},
@@ -521,8 +524,139 @@ export default function AnalyticsPage(){
         )}
 
 
+        {tab === 'ab' && (
+  <div style={{display:'grid',gap:16}}>
+
+    {!abData ? (
+      <Empty msg="No A/B data available" />
+    ) : (
+      <>
+        {/* 🔥 Hero Summary Card */}
+        <div style={{
+          borderRadius:16,
+          padding:20,
+          background:'linear-gradient(135deg,#ecfdf5,#dcfce7)',
+          border:'1px solid #bbf7d0',
+          boxShadow:'0 4px 20px rgba(0,0,0,0.05)'
+        }}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+            <div>
+              <div style={{fontSize:12,color:'#15803d',fontFamily:'DM Mono'}}>MODEL IMPACT</div>
+              <div style={{fontSize:32,fontWeight:900,color:'#065f46'}}>
+                ↓ {abData.reduction_pct}%
+              </div>
+              <div style={{fontSize:12,color:'#047857'}}>
+                Reduction in proximity events
+              </div>
+            </div>
+
+            <div style={{textAlign:'right'}}>
+              <div style={{fontSize:12,color:'#3d7a52'}}>Statistical Significance</div>
+              <div style={{
+                padding:'6px 12px',
+                borderRadius:20,
+                background:abData.significant ? '#dcfce7' : '#fee2e2',
+                color:abData.significant ? '#16a34a' : '#ef4444',
+                fontWeight:700
+              }}>
+                {abData.significant ? 'SIGNIFICANT' : 'NOT SIGNIFICANT'}
+              </div>
+              <div style={{fontSize:11,color:'#6b7280',marginTop:6}}>
+                p = {abData.p_value} · d = {abData.cohens_d}
+              </div>
+            </div>
+          </div>
+
+          <div style={{marginTop:10,fontSize:12,color:'#065f46'}}>
+            {abData.description}
+          </div>
+        </div>
+
+        {/* 📊 Comparison Cards */}
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+
+          {/* RL Card */}
+          <div style={{
+            borderRadius:14,
+            padding:16,
+            background:'#f0fdf4',
+            border:'1px solid #bbf7d0'
+          }}>
+            <div style={{fontWeight:800,color:'#16a34a',marginBottom:10}}>
+              🧠 RL Agent
+            </div>
+
+            {[
+              ['Distance', abData.rl_on.mean_min_settlement_dist_km, 'km'],
+              ['Critical Alerts', abData.rl_on.critical_alerts_per_day, '/day'],
+              ['Proximity Events', abData.rl_on.proximity_events_per_day, '/day'],
+              ['High Risk (30d)', abData.rl_on.high_risk_events_30d, ''],
+            ].map(([label,val,unit])=>(
+              <div key={label} style={{marginBottom:10}}>
+                <div style={{fontSize:11,color:'#3d7a52'}}>{label}</div>
+                <div style={{fontSize:18,fontWeight:800,color:'#065f46'}}>
+                  {val} {unit}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Random Card */}
+          <div style={{
+            borderRadius:14,
+            padding:16,
+            background:'#fff7ed',
+            border:'1px solid #fed7aa'
+          }}>
+            <div style={{fontWeight:800,color:'#f97316',marginBottom:10}}>
+              🎲 Random Walk
+            </div>
+
+            {[
+              ['Distance', abData.random_walk.mean_min_settlement_dist_km, 'km'],
+              ['Critical Alerts', abData.random_walk.critical_alerts_per_day, '/day'],
+              ['Proximity Events', abData.random_walk.proximity_events_per_day, '/day'],
+              ['High Risk (30d)', abData.random_walk.high_risk_events_30d, ''],
+            ].map(([label,val,unit])=>(
+              <div key={label} style={{marginBottom:10}}>
+                <div style={{fontSize:11,color:'#92400e'}}>{label}</div>
+                <div style={{fontSize:18,fontWeight:800,color:'#7c2d12'}}>
+                  {val} {unit}
+                </div>
+              </div>
+            ))}
+          </div>
+
+        </div>
+
+        {/* 📊 Visual Comparison Chart */}
+        <Card title="📊 Proximity Events Comparison">
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={[
+              {name:'RL', value:abData.rl_on.proximity_events_per_day},
+              {name:'Random', value:abData.random_walk.proximity_events_per_day}
+            ]}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0fdf4"/>
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="value" radius={[6,6,0,0]}>
+                <Cell fill="#22c55e"/>
+                <Cell fill="#f97316"/>
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
+
+      </>
+    )}
+
+  </div>
+)}
+
+
         {/* ── A/B Impact Analysis ── */}
-        {tab==='ab'&&(
+        {/* {tab==='ab'&&(
           <div style={{display:'grid',gap:12}}>
             {abData?.summary&&(
               <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10}}>
@@ -635,7 +769,7 @@ export default function AnalyticsPage(){
               </div>
             </div>
           </div>
-        )}
+        )} */}
 
       </div>
     </div>

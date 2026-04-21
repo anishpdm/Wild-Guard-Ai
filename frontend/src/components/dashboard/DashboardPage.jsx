@@ -23,6 +23,9 @@ const SETTS_FALLBACK=[
 ]
 // This gets replaced by real OSM data in the component
 
+
+
+
 // Historical HEC hotspot data — real conflict zones around Wayanad settlements
 const HEAT_POINTS = [
   // [lat, lon, intensity]  — near settlements, forest fringe areas
