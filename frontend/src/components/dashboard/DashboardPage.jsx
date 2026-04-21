@@ -356,6 +356,7 @@ export default function DashboardPage(){
   })
 
   const mapDiv = useRef(null)
+  const simRef = useRef(null)
   const [selId,   setSelId   ] = useState('WY_ELE_F01')
   const [soundOn, setSoundOn ] = useState(true)
   const [showTraj,setShowTraj] = useState(true)
